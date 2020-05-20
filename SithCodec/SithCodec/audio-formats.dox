@@ -1,0 +1,44 @@
+/**
+@page audio-formats Audio Formats
+@brief Documentation for <em>KOTOR</em> audio file formats.
+
+@tableofcontents
+
+
+@section audio-formats_class Classification
+
+<em>KOTOR</em> audio files can be grouped into two categories that I will call the @b VO format and the @b SFX format. In general, the VO format is used for voiceover and music files, while the SFX format is used for other sound effects.
+
+Music files are typically located in the @p streammusic folder. Voiceover files are typically located in the @p streamwaves folder for <em>KOTOR 1</em> and the @p streamvoice folder for <em>KOTOR 2</em>. Most other sound effects are located in the @p streamsounds folder.
+
+@note %SithCodec distinguishes between VO and music, but this is merely for user convenience. All music operations are identical to VO operations.
+
+
+@section audio-formats_vo VO Format
+
+<em>KOTOR</em> VO files are MP3 files that were renamed to use a @p .wav extension. They also contain an extraneous WAVE-like header that precedes the real MP3 data.
+
+MP3 frames start with a synch word containing the bytes <tt>FF Fx</tt><sup><a href="https://www.garykessler.net/library/file_sigs.html">[1]</a><a href="http://www.nationalarchives.gov.uk/PRONOM/Format/proFormatSearch.aspx?status=detailReport&id=687&strPageToDisplay=signatures">[2]</a></sup>, in this case <tt>FF FB</tt>. In this case, the sync word is <tt>FF FB</tt>. <em>KOTOR</em> VO files lack metadata (such as an ID3 tag), so the first instance of this sync word is also the start of the MP3 data. The first instance occurs at position 58. This is the "correct" start of a file and the first 58 bytes are irrelevant to the file's true format.
+
+
+@section audio-formats_sfx SFX Format
+
+<em>KOTOR</em> SFX files are WAV files that contain an extraneous MP3-like header that precedes the real WAVE data.
+
+WAVE files start with the bytes <tt>52 49 46 46</tt><sup><a href="https://www.garykessler.net/library/file_sigs.html">[1]</a><a href="http://www.nationalarchives.gov.uk/PRONOM/Format/proFormatSearch.aspx?status=detailReport&id=654&strPageToDisplay=signatures">[3]</a></sup>, which simply spell out "RIFF"---as in Resource Interchange File Format, the parent format of WAVE. The first instance of this byte sequence occurs at position 470 in <em>KOTOR</em> SFX files. This is the "correct" start of a file and the first 470 bytes are irrelevant to the file's true format.
+
+
+@section audio-formats_summary Summary
+
+%SithCodec removes the first 58 bytes of VO files and the first 470 bytes of SFX files when decoding.
+
+The extra headers' raw bytes are recorded in FileHeaders.h for encoding use.
+
+
+@section audio-formats_citations Citations
+
+-# Gary C. Kessler. <a href="https://www.garykessler.net/library/file_sigs.html">"GCK's File Signatures Table"</a>. Retrieved 2020-05-19.
+-# The National Archives. <a href="http://www.nationalarchives.gov.uk/PRONOM/Format/proFormatSearch.aspx?status=detailReport&id=687&strPageToDisplay=signatures">"MPEG 1/2 Audio Layer 3 Signatures"</a>. Retrieved 2020-05-19.
+-# The National Archives. <a href="http://www.nationalarchives.gov.uk/PRONOM/Format/proFormatSearch.aspx?status=detailReport&id=654&strPageToDisplay=signatures">"Waveform Audio Signatures"</a>. Retrieved 2020-05-19.
+
+*/

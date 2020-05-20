@@ -1,0 +1,38 @@
+/**
+@mainpage
+
+@tableofcontents
+
+
+@section main_intro Introduction
+
+The audio files of <em>Star Wars: Knights of the Old Republic</em> and <em>Star Wars: Knights of the Old Republic II -- The Sith Lords</em> (<em>KOTOR</em>) contain extra headers of what seem to be superfluous data that obfuscate access to the original audio outside of the video games. Most audio software will refuse to open the files, or interpret the extra bytes as audio data, leading to glitches. It has also been observed anecdotally that files lacking an appropriate header may fail to playback in certain releases of the games.
+
+%SithCodec is an application that can automatically detect and remove an extraneous header from a <em>KOTOR</em> audio file, or alternatively prepend a <em>KOTOR</em> header to a standard audio file and allow for the introduction of new audio content to these games.
+
+
+@section main_reqs Requirements
+
+- C++ 17 or later
+- No third party libraries
+
+
+@section main_copyright Copyright
+
+© 2020 Brendan Brassil
+
+%SithCodec is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+%SithCodec is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the @ref gnu-gpl along with %SithCodec. If not, see <https://www.gnu.org/licenses/>.
+
+Permission is granted to copy, distribute and/or modify this document under the terms of the GNU Free Documentation License, Version 1.3 or any later version published by the Free Software Foundation; with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.
+
+A copy of the license is included in the section entitled \"@ref gnu-fdl\".
+
+All trademarks (including logos and icons) are used for identification purposes only and are the property of their respective owners.
+
+<em>Star Wars</em> and related items are trademarks and/or copyrights of Lucasfilm Ltd. %SithCodec is not affiliated with or endorsed by Lucasfilm Ltd., their subsidiaries, associates, or employees, or any <em>Star Wars</em> license holder.
+
+*/
