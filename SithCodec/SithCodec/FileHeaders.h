@@ -1,57 +1,46 @@
 /**
- *	@file FileHeaders.h
- *	@brief Contains audio file header data.
- *	@author Brendan Brassil
- *	@date 2020-05-16 created
- *	@date 2020-05-16 last modified
- *	
- *	@par Changelog
- *	@parblock
- *		2020-05-16
- *		- SFX, VO headers.
- *	@endparblock
- *	
+ *	@file fileheaders.h
+ *	@brief Contains header data of audo file formats from <em>Star Wars:
+ *		   Knights of the Old Republic</em>.
+ *
  *	@copyright GNU General Public License
  *	@parblock
- *		Copyright (C) 2020 Brendan Brassil
+ *		Copyright (C) 2022 Brendan Brassil
  *
  *		This file is part of %SithCodec.
- *		
+ *
  *		%SithCodec is free software: you can redistribute it and/or modify
  *		it under the terms of the GNU General Public License as published by
  *		the Free Software Foundation, either version 3 of the License, or
  *		(at your option) any later version.
- *		
+ *
  *		%SithCodec is distributed in the hope that it will be useful,
  *		but WITHOUT ANY WARRANTY; without even the implied warranty of
  *		MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  *		GNU General Public License for more details.
- *		
-*		You should have received a copy of the GNU General Public License
+ *
+ *		You should have received a copy of the GNU General Public License
  *		along with %SithCodec. If not, see <https://www.gnu.org/licenses/>.
  *	@endparblock
  */
 
-#ifndef HEADER_H
-#define HEADER_H
+#ifndef SITHCODEC_FILEHEADERS_H
+#define SITHCODEC_FILEHEADERS_H
 
 #include <cstddef>
 
- /**
-  *	Project namespace.
-  */
 namespace SithCodec {
 	/**
 	 *	@brief Audio headers for <em>Star Wars: Knights of the Old Republic</em>.
 	 */
 	namespace Header {
 		namespace {
-			const std::size_t
-				MAX_SIZE = 470,
-				SFX_SIZE = 470,
-				VO_SIZE = 58;
+			constexpr std::streamsize
+				maxSize = 470,
+				sfxSize = 470,
+				voSize = 58;
 
-			const char SFX[SFX_SIZE] {
+			constexpr char sfx[sfxSize]{
 				(char)0xffffffff,
 				(char)0xfffffff3,
 				(char)0x60,
@@ -524,7 +513,7 @@ namespace SithCodec {
 				(char)0x55
 			};
 
-			const char VO[VO_SIZE] {
+			constexpr char vo[voSize]{
 				(char)0x52,
 				(char)0x49,
 				(char)0x46,

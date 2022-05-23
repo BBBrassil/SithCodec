@@ -1,96 +1,189 @@
 /**
- *	@file SithCodec.cpp
- *	@brief Runs %SithCodec application through the command line.
- *	@author Brendan Brassil
- *	@date 2020-05-16 created
- *	@date 2020-05-17 last modified
+ *	@file main.cpp
+ *	@brief Command-line interface for %SithCodec.
  *
- *	@par Changelog
- *	@parblock
- *		2020-05-16
- *		- menu(), help(), toLowercase(), formatFromInput(), getArgs(), executeArgs(),
- *		- runDecode(), runDecodeAll(), runEncode(), runEncodeAll(), runList().
- *		
- *		2020-05-17
- *		- Split some of help off into new welcome, commands, and examples screens.
- *		- Debugged getArgs(), executeArgs().
- *	@endparblock
- *	
  *	@copyright GNU General Public License
  *	@parblock
- *		Copyright (C) 2020 Brendan Brassil
+ *		Copyright (C) 2022 Brendan Brassil
  *
  *		This file is part of %SithCodec.
- *		
+ *
  *		%SithCodec is free software: you can redistribute it and/or modify
  *		it under the terms of the GNU General Public License as published by
  *		the Free Software Foundation, either version 3 of the License, or
  *		(at your option) any later version.
- *		
+ *
  *		%SithCodec is distributed in the hope that it will be useful,
  *		but WITHOUT ANY WARRANTY; without even the implied warranty of
  *		MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  *		GNU General Public License for more details.
- *		
-*		You should have received a copy of the GNU General Public License
+ *
+ *		You should have received a copy of the GNU General Public License
  *		along with %SithCodec. If not, see <https://www.gnu.org/licenses/>.
  *	@endparblock
  */
 
-#include "SithCodec.h"
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <vector>
 
-#include <filesystem>
+#include "codec.h"
 
+namespace fs = std::filesystem;
 using namespace std;
-
-/**
- *	@brief Error message for failed operations.
- */
-#define FAIL_ERROR "FAILED"
+using namespace SithCodec;
 
 /**
  *	@brief Enumerator describing menu action results
  */
 enum class Result {
-	SUCCESS,
-	FAILURE,
-	BAD_INPUT,
-	QUIT
+	Success,
+	Failure,
+	BadInput,
+	Quit
 };
 
 /**
  *	@brief Displays the main menu screen.
+ *
+ *	@param output output stream
+ *
+ *	@return output
  */
-void menu();
+void menu(istream& input = cin, ostream& output = cout);
 
 /**
  *	@brief Displays the welcome screen.
+ *
+ *	@param output output stream
+ *
+ *	@return output
  */
-void welcome();
+ostream& welcome(ostream& output = cout);
 
 /**
  *	@brief Displays the help screen.
+ *
+ *	@param output output stream
+ *
+ *	@return output
  */
-void help();
+ostream& help(ostream& output = cout);
 
 /**
  *	@brief Displays commands screen.
+ *
+ *	@param output output stream
+ *
+ *	@return output
  */
-void commands();
+ostream& commands(ostream& output = cout);
 
 /**
  *	@brief Displays examples screen.
+ *
+ *	@param output output stream
+ *
+ *	@return output
  */
-void examples();
+ostream& examples(ostream& output = cout);
+
+/**
+ *	@brief Executes a command based on the input arguments.
+ *
+ *	@param argc command-line argument count
+ *	@param argv command-line argument vector
+ *
+ *	@return vector of arguments
+ */
+vector<string> parseArgs(int argc, const char* argv[]);
+
+/**
+ *	@brief Extracts arguments from a string.
+ *
+ *	@param str string containing arguments
+ *
+ *	@return vector of arguments
+ */
+vector<string> parseArgs(const string& str);
+
+/**
+ *	@brief Executes a command based on the input arguments.
+ *
+ *	@param args arguments
+ *	@param log  output stream for logging
+ *
+ *	@return result of execution
+ */
+Result executeArgs(vector<string>& args, ostream& log = cout);
+
+/**
+ *	@brief Decodes an audio file.
+ *
+ *	@param inputPath  input file path
+ *	@param format     audio format
+ *	@param outputPath output file path
+ *	@param log        output stream for logging
+ */
+void runEncode(const fs::path& inputPath, SithCodec::AudioFormat format, const fs::path& outputPath = "", ostream& log = cout);
+
+/**
+ *	@brief Encodes all audio files.
+ *
+ *	@param inputPath  path to list of audio files, or directory containing audio files
+ *	@param format     audio format
+ *	@param outputPath output file path
+ *	@param log        output stream for logging
+ */
+void runEncodeAll(const fs::path& inputPath, SithCodec::AudioFormat format, const fs::path& outputPath = "", ostream& log = cout);
+
+/**
+ *	@brief Decodes an audio file.
+ *
+ *	@param inputPath  input file path
+ *	@param outputPath output file path
+ *	@param log        output stream for logging
+ */
+void runDecode(const fs::path& inputPath, const fs::path& outputPath = "", ostream& log = cout);
+
+/**
+ *	@brief Decodes all audio files.
+ *
+ *	@param inputPath  path to list of audio files, or directory containing audio files
+ *	@param outputPath output directory
+ *	@param log        output stream for logging
+ */
+void runDecodeAll(const fs::path& inputPath, const fs::path& outputPath = "", ostream& log = cout);
+
+/**
+ *	@brief Generates a list of all files in a directory and the corresponding
+ *		   audio formats.
+ *
+ *	@param inputPath  directory to search
+ *	@param outputPath output path of file, or empty string for cout
+ *	@param log        output stream for logging
+ *
+ *	@warning If the current path is used, the executable will appear in the list.
+ */
+void runList(const fs::path& inputPath, const fs::path& outputPath = "", ostream& log = cout);
+
+/**
+ *	@brief Prints the status of a file operation.
+ *
+ *	@param op  FileOperation
+ *	@param log output stream for logging
+ */
+void printLog(const FileOperation& op, ostream& log = cout);
 
 /**
  *	@brief Converts a string to all lowercase.
  *
- *	@param str string
+ *	@param str string to convert
  *
  *	@return lowercase string
  */
-string toLowercase(const string& str);
+string toLowercase(string str);
 
 /**
  *	@brief Determines audio format based on input command.
@@ -102,91 +195,13 @@ string toLowercase(const string& str);
  *	@pre string must be lowercase
  *	@throws runtime_error
  */
-SithCodec::AudioFormat formatFromInput(const string& str);
+AudioFormat toAudioFormat(const string& str);
 
-/**
- *	@brief Executes a command based on the input arguments.
- *
- *	@param argc command-line argument count
- *	@param argv command-line argument vector
- *
- *	@return vector of arguments
- */
-vector<string> getArgs(int argc, const char* argv[]);
 
-/**
- *	@brief Extracts arguments from a string.
- *
- *	@param str string containing arguments
- *
- *	@return vector of arguments
- */
-vector<string> getArgs(const string& str);
-
-/**
- *	@brief Executes a command based on the input arguments.
- *
- *	@param args arguments
- *
- *	@return result of execution - SUCCESS, FAILURE, BAD_INPUT, or QUIT
- */
-Result executeArgs(vector<string>& args);
-
-/**
- *	@brief Decodes an audio file.
- *
- *	@param inStr input file path
- *	@param outStr output file path
- */
-void runDecode(const string& inStr, const string& outStr = "");
-
-/**
- *	@brief Decodes all audio files.
- *
- *	@param inStr path to list of audio files, or directory containing audio files
- *	@param outStr output file path
- */
-void runDecodeAll(const string& inStr, const std::string& outStr = "");
-
-/**
- *	@brief Decodes an audio file.
- *
- *	@param inStr file path
- *	@param format audio format
- *	@param outStr output file path
- */
-void runEncode(const string& inStr, SithCodec::AudioFormat format, const string& outStr = "");
-
-/**
- *	@brief Encodes all audio files.
- *
- *	@param inStr path to list of audio files, or directory containing audio files
- *	@param format audio format
- *	@param outStr output file path
- */
-void runEncodeAll(const string& inStr, SithCodec::AudioFormat format, const std::string& outStr = "");
-
-/**
- *	@brief Generates a list of all files in a directory and the corresponding
- *		   audio formats.
- *
- *	@param inStr directory to search
- *	@param outStr output path of file, or empty string for cout
- *
- *	@warning If the current path is used, the executable will appear in the list.
- */
-void runList(const string& inStr, const string& outStr = "");
-
-/**
- *	@brief Main
- *	
- *	@param argc command-line argument count
- *	@param argv command-line argument vector
- *	
- *	@return nothing
- */
 int main(int argc, const char* argv[]) {
-	vector<string> args = getArgs(argc, argv);
+	vector<string> args = parseArgs(argc, argv);
+
+	cout.sync_with_stdio(false);
 
 	if( args.size() > 1 )
 		executeArgs(args);
@@ -196,49 +211,49 @@ int main(int argc, const char* argv[]) {
 	return 0;
 }
 
-void menu() {
+void menu(istream& input, ostream& output) {
 	bool quit = false;
-	string input;
-	vector<string> args;
-	Result result;
 
-	welcome();
+	output << welcome;
 
-	while( !quit ) {
-		cout << ">";
+	do {
+		output << ">";
 
-		getline(cin, input);
-		args = getArgs(input);
+		string str;
 
-		result = executeArgs(args);
+		getline(input, str);
+
+		auto args = parseArgs(str);
+		auto result = executeArgs(args, output);
 
 		switch( result ) {
-		case Result::SUCCESS:
+		case Result::Success:
 			break;
-		case Result::FAILURE:
-			cout << "Finished with errors.\n";
+		case Result::Failure:
+			output << "Finished with errors.\n";
 			break;
-		case Result::BAD_INPUT:
-			cout << "Invalid input. You can enter -h or --help to get help.\n";
+		case Result::BadInput:
+			output << "Invalid input. You can enter -h or --help to get help.\n";
 			break;
-		case Result::QUIT:
+		case Result::Quit:
 			quit = true;
+			break;
 		}
-	}
+	} while( !quit );
 }
 
-void welcome() {
-	cout
+ostream& welcome(ostream& output) {
+	return output
 		<< "-------------------------------------------------------------------------------\n"
 		<< "SithCodec                                                                      \n"
 		<< "                                                                               \n"
 		<< "Converts audio formats for Star Wars: Knights of the Old Republic &            \n"
-		<< "Star Wars: Knights of the Old Republic II - The Sith Lords                     \n";
-	help();
+		<< "Star Wars: Knights of the Old Republic II - The Sith Lords                     \n"
+		<< help;
 }
 
-void help() {
-	cout
+ostream& help(ostream& output) {
+	return output
 		<< "-------------------------------------------------------------------------------\n"
 		<< "Help                                                                           \n"
 		<< "                                                                               \n"
@@ -260,8 +275,8 @@ void help() {
 		<< "                                                                               \n";
 }
 
-void commands() {
-	cout
+ostream& commands(ostream& output) {
+	return output
 		<< "                                                                               \n"
 		<< "-------------------------------------------------------------------------------\n"
 		<< "Commands                                                                       \n"
@@ -286,8 +301,8 @@ void commands() {
 		<< "                                                                               \n";
 }
 
-void examples() {
-	cout
+ostream& examples(ostream& output) {
+	return output
 		<< "                                                                               \n"
 		<< "-------------------------------------------------------------------------------\n"
 		<< "Examples                                                                       \n"
@@ -310,81 +325,7 @@ void examples() {
 		<< "                                                                               \n";
 }
 
-string toLowercase(const string& str) {
-	stringstream ss;
-
-	for( size_t i = 0; i < str.size(); ++i )
-		ss << static_cast<char>(tolower(str[i]));
-
-	return ss.str();
-}
-
-SithCodec::AudioFormat formatFromInput(const string& str) {
-	std::string lowercase = toLowercase(str);
-
-	if( lowercase == "-m" || lowercase == "--music" ||
-		lowercase == "-v" || lowercase == "--vo" )
-		return SithCodec::AudioFormat::VO;
-	if( lowercase == "-s" || lowercase == "--sfx" )
-		return SithCodec::AudioFormat::SFX;
-	throw runtime_error("No such audio format.");
-}
-
-void runDecode(const string& inStr, const string& outStr) {
-	try {
-		SithCodec::decode(inStr, outStr);
-	}
-	catch( const exception & ex ) {
-		cout << ex.what() << '\n';
-	}
-}
-
-void runDecodeAll(const string& inStr, const std::string& outStr) {
-	vector<pair<string, bool>> operations;
-
-	try {
-		operations = SithCodec::decodeAll(inStr, outStr);
-		for( const auto& o : operations )
-			cout << "  " << o.first << " " << (o.second ? "" : FAIL_ERROR) << '\n';
-	}
-	catch( const exception & ex ) {
-		cout << ex.what() << '\n';
-	}
-}
-
-void runEncode(const string& inStr, SithCodec::AudioFormat format, const string& outStr) {
-	try {
-		SithCodec::encode(inStr, format, outStr);
-	}
-	catch( const exception & ex ) {
-		cout << ex.what() << '\n';
-	}
-}
-
-void runEncodeAll(const string& inStr, SithCodec::AudioFormat format,
-	const std::string& outStr) {
-	vector<pair<string, bool>> operations;
-
-	try {
-		operations = SithCodec::encodeAll(inStr, format, outStr);
-		for( const auto& o : operations )
-			cout << "  " << o.first << " " << (o.second ? "" : FAIL_ERROR) << '\n';
-	}
-	catch( const exception & ex ) {
-		cout << ex.what() << '\n';
-	}
-}
-
-void runList(const string& inStr, const string& outStr) {
-	try {
-		SithCodec::printFormats(inStr, outStr);
-	}
-	catch( const exception & ex ) {
-		cout << ex.what() << '\n';
-	}
-}
-
-vector<string> getArgs(int argc, const char* argv[]) {
+vector<string> parseArgs(int argc, const char* argv[]) {
 	vector<string> args(argc);
 
 	for( size_t i = 0; i < argc; ++i )
@@ -393,17 +334,18 @@ vector<string> getArgs(int argc, const char* argv[]) {
 	return args;
 }
 
-vector<string> getArgs(const string& str) {
+vector<string> parseArgs(const string& str) {
 	vector<string> args;
 	string arg;
-	size_t length = str.length(), start = 0, end = 0;
+	string::size_type length = str.length(), start = 0, end = 0;
 
 	args.emplace_back(""); // to match command line arg count
 	do {
 		start = str.find('-', start);
 
-		if( start == string::npos || start == length - 1 )
+		if( start == string::npos || start == length - 1 ) {
 			arg = "";
+		}
 		else {
 			end = str.find('-', start + (start < length - 1 ? 2 : 1));
 
@@ -421,51 +363,51 @@ vector<string> getArgs(const string& str) {
 	return args;
 }
 
-Result executeArgs(vector<string>& args) {
-	size_t argc = args.size(), pos;
-	string option, inStr, outStr, format, arg;
+Result executeArgs(vector<string>& args, ostream& log) {
+	string::size_type argc = args.size(), pos;
+	string option, inputStr, outputStr, format, arg;
 
 	for( size_t i = 1; i < argc; ++i ) {
 		arg = toLowercase(args[i]);
 		// Quit - immediate success
 		if( arg == "-q" || arg == "--quit" )
-			return Result::QUIT;
+			return Result::Quit;
 		// Help screen - immediate success
 		if( arg == "-h" || arg == "--help" ) {
-			help();
-			return Result::SUCCESS;
+			log << help;
+			return Result::Success;
 		}
 		// Commands screen - immediate success
 		if( arg == "-c" || arg == "--commands" ) {
-			commands();
-			return Result::SUCCESS;
+			log << commands;
+			return Result::Success;
 		}
 		// Examples screen - immediate success
 		if( arg == "-x" || arg == "--examples" ) {
-			examples();
-			return Result::SUCCESS;
+			log << examples;
+			return Result::Success;
 		}
 		// Other options need to loop to get all their arguments
 		// Decode
 		if( arg == "-d" || arg == "--decode" ) {
 			if( option != "" )
-				return Result::BAD_INPUT;
-			option = "d";
+				return Result::BadInput;
 			if( i == argc - 1 )
-				return Result::BAD_INPUT;
+				return Result::BadInput;
+			option = "d";
 		}
 		//Encode
 		else if( arg == "-e" || arg == "--encode" ) {
 			if( option != "" )
-				return Result::BAD_INPUT;
-			option = "e";
+				return Result::BadInput;
 			if( i == argc - 1 )
-				return Result::BAD_INPUT;
+				return Result::BadInput;
+			option = "e";
 		}
 		// List
 		else if( arg == "-l" || arg == "--list" ) {
 			if( option != "" )
-				return Result::BAD_INPUT;
+				return Result::BadInput;
 			option = "l";
 		}
 		// Decode/encode upgraded to decode all/encode all
@@ -475,59 +417,157 @@ Result executeArgs(vector<string>& args) {
 			else if( option == "e" )
 				option = "ea";
 			else
-				return Result::BAD_INPUT;
+				return Result::BadInput;
 		}
 		// Input path (can only be set once)
 		else if( (pos = arg.find("-i")) == 0 ||
 			arg.find("--in") == 0 ) {
 			pos = pos != string::npos ? 3 : 5;
-			if( inStr != "" ||
-				arg.length() < pos + 1
+			if( inputStr != ""
+				|| arg.length() < pos + 1
 				|| arg[pos - 1] != '=' )
-				return Result::BAD_INPUT;
-			inStr = args[i].substr(pos, arg.length() - pos);
+				return Result::BadInput;
+			inputStr = args[i].substr(pos, arg.length() - pos);
 		}
 		// Output path (can only be set once)
 		else if( (pos = arg.find("-o")) == 0 ||
 			arg.find("--out") == 0 ) {
 			pos = pos != string::npos ? 3 : 6;
-			if( outStr != "" ||
-				arg.length() < pos + 1
+			if( outputStr != ""
+				|| arg.length() < pos + 1
 				|| arg[pos - 1] != '=' )
-				return Result::BAD_INPUT;
-			outStr = args[i].substr(pos, arg.length() - pos);
+				return Result::BadInput;
+			outputStr = args[i].substr(pos, arg.length() - pos);
 		}
 		// Audio format (can only be set once)
 		else if( arg == "-f" || arg == "--format" ) {
 			if( ++i == argc )
-				return Result::BAD_INPUT;
+				return Result::BadInput;
 			if( format != "" )
-				return Result::BAD_INPUT;
+				return Result::BadInput;
 			format = args[i];
 		}
 		// Other errors
 		else
-			return Result::BAD_INPUT;
+			return Result::BadInput;
 	}
 
-	// Call functions
 	try {
 		if( option == "d" )
-			runDecode(inStr, outStr);
+			runDecode(inputStr, outputStr, log);
 		else if( option == "da" )
-			runDecodeAll(inStr, outStr);
+			runDecodeAll(inputStr, outputStr, log);
 		else if( option == "e" )
-			runEncode(inStr, formatFromInput(format), outStr);
+			runEncode(inputStr, toAudioFormat(format), outputStr, log);
 		else if( option == "ea" )
-			runEncodeAll(inStr, formatFromInput(format), outStr);
+			runEncodeAll(inputStr, toAudioFormat(format), outputStr, log);
 		else if( option == "l" )
-			runList(inStr, outStr);
-		return Result::SUCCESS;
+			runList(inputStr, outputStr, log);
+		return Result::Success;
 	}
 	catch( const exception& ex ) {
-		cout << ex.what() << '\n';
+		log << ex.what() << '\n';
+		return Result::Failure;
 	}
-	return Result::FAILURE;
 }
 
-#undef FAIL_ERROR
+void runEncode(const fs::path& inputPath, AudioFormat format, const fs::path& outputPath, ostream& log) {
+	if( format == AudioFormat::None ) {
+		log << formatErrorMsg << '\n';
+		return;
+	}
+
+	try {
+		encode(inputPath, format, outputPath);
+	}
+	catch( const exception& ex ) {
+		log << ex.what() << '\n';
+	}
+}
+
+void runEncodeAll(const fs::path& inputPath, AudioFormat format, const fs::path& outputPath, ostream& log) {
+	if( format == AudioFormat::None ) {
+		log << formatErrorMsg << '\n';
+		return;
+	}
+
+	try {
+		const auto operations = encodeAll(inputPath, format, outputPath);
+
+		for( const auto& op : operations )
+			printLog(op, log);
+	}
+	catch( const exception& ex ) {
+		log << indentLevel2 << ex.what() << '\n';
+	}
+}
+
+void runDecode(const fs::path& inputPath, const fs::path& outputPath, ostream& log) {
+	try {
+		decode(inputPath, outputPath);
+	}
+	catch( const exception& ex ) {
+		log << ex.what() << '\n';
+	}
+}
+
+void runDecodeAll(const fs::path& inputPath, const fs::path& outputPath, ostream& log) {
+	try {
+		const auto operations = decodeAll(inputPath, outputPath);
+
+		for( const auto& op : operations )
+			printLog(op, log);
+	}
+	catch( const exception& ex ) {
+		log << indentLevel2 << ex.what() << '\n';
+	}
+}
+
+void runList(const fs::path& inputPath, const fs::path& outputPath, ostream& log) {
+	try {
+		if( outputPath == "" ) {
+			printFormats(inputPath);
+		}
+		else {
+			ofstream file(outputPath);
+
+			if( !file )
+				log << writeErrorMsg(outputPath);
+			else
+				printFormats(inputPath, file);
+		}
+	}
+	catch( const exception& ex ) {
+		log << indentLevel2 << ex.what() << '\n';
+	}
+}
+
+void printLog(const FileOperation& op, ostream& log) {
+	log << indentLevel1 << op.path.string() << ' ';
+	if( op.error ) {
+		log
+			<< failMsg << '\n'
+			<< indentLevel2 << op.error.value() << '\n';
+	}
+	else {
+		log << successMsg << '\n';
+	}
+}
+
+string toLowercase(string str) {
+	for( string::size_type i = 0; i < str.size(); ++i )
+		str[i] = tolower(static_cast<unsigned char>(str[i]));
+	return str;
+}
+
+AudioFormat toAudioFormat(const string& str) {
+	string lowercase = toLowercase(str);
+
+	if( lowercase == "-m" || lowercase == "--music" ||
+		lowercase == "-v" || lowercase == "--vo" )
+		return AudioFormat::VO;
+	else if( lowercase == "-s" || lowercase == "--sfx" )
+		return AudioFormat::SFX;
+	else
+		return AudioFormat::None;
+}

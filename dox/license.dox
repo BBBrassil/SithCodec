@@ -1,0 +1,10 @@
+/**
+@page license License
+@brief Here is a list of all license documentation pages.
+
+<table class="directory">
+	<tr><td class="entry">@ref gnu-fdl</td><td class="desc">GNU FDLv1.3</td></tr>
+	<tr><td class="even"></span>@ref gnu-gpl</td><td class="desc">GNU GPLv3.0</td></tr>
+</table>
+
+*/

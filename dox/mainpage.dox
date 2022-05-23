@@ -14,7 +14,7 @@ The audio files of <em>Star Wars: Knights of the Old Republic</em> and <em>Star 
 @section main_reqs Requirements
 
 - C++ 17 or later
-- No third party libraries
+- No third party libraries required
 
 
 @section main_copyright Copyright

@@ -8,4 +8,4 @@ SithCodec is an application that can automatically detect and remove an extraneo
 
 ## Requirements
 - C++ 17 or later
-- No third party libraries
+- No third party libraries required
